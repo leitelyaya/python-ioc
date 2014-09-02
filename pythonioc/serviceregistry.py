@@ -60,16 +60,18 @@ class ServiceRegistry(object):
         
     def getServiceByName(self, serviceName):
         """
-        This is only a method for testing. Donu't use it in production, it's going to 
-        return the ServiceProxy object, not the real service!!!
+        This is only a method for testing. Don't use in production, it's going to 
+        return the ServiceProxy object, not the real service!
         """
-        
         
         assert serviceName in self.__registry, (u"No Service %s registered" % serviceName)
         
         return self.__registry[serviceName]
     
     def hasService(self, serviceName):
+        """
+        Checks whether a service is registered.
+        """
         return serviceName in self.__registry
                
     def destroy(self):
@@ -84,6 +86,10 @@ class ServiceRegistry(object):
         self.__registry = {}
         
     def createWired(self, itemClass, *args, **kwargs):
+        """
+        Create an item, automatically injecting all
+        dependencies.
+        """
         instance = itemClass(*args, **kwargs)
         self.injectDependencies(instance)
         return instance
