@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 import logging
-import sys
 import inspect
-from core.ioc.serviceproxy import ServiceProxy
+import serviceproxy
 
 
 class ServiceRegistry(object):
@@ -41,7 +40,7 @@ class ServiceRegistry(object):
                             The instance might miss some dependencies""" % serviceName)
         assert serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
         
-        self.__registry[serviceName] = ServiceProxy(serviceClass, self)
+        self.__registry[serviceName] = serviceproxy.ServiceProxy(serviceClass, self)
         
     def registerServiceInstance(self, instance):
         serviceName = self.__makeServiceName(instance.__class__.__name__)
@@ -72,19 +71,7 @@ class ServiceRegistry(object):
     
     def hasService(self, serviceName):
         return serviceName in self.__registry
-    
-    
-#    def wireServices(self):
-#        for service in self.__registry.values():
-#            self.injectDependencies(service, runPostInit=False)
-#            
-#        # call postinit in order of registering
-#        for (serviceName, service) in self.__registry.iteritems():
-#
-#            if hasattr(service, u'postInit'):
-#                self.log.debug(u'Post-Initializing Service %s' % serviceName)
-#                service.postInit()
-            
+               
     def destroy(self):
         """
         Destroys all services.
@@ -123,10 +110,6 @@ class ServiceRegistry(object):
             serviceName = name[1:]
             if serviceName in self.__registry:
                 setattr(service, name, self.__registry[serviceName])
-#            else:
-#                self.log.warn((u"Attribute %s.%s looks like a service dependency," + 
-#                                u"but no service was found. It should be renamed to avoid confusion.") 
-#                                % (unicode(service.__class__.__name__), name))
         if runPostInit:
             self._runServicePostInit(self.__makeServiceName(service.__class__.__name__), service)
             
