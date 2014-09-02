@@ -22,3 +22,6 @@ src/static
 # log files
 *.log
 
+
+MANIFEST
+dist
