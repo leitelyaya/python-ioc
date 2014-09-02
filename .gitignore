@@ -1,0 +1,24 @@
+*.pyc
+
+.project
+.pydevproject
+.settings
+*.o
+*.a
+*.*~
+
+# videoplatform
+videoplatform/demonstrator
+
+
+# twisted stuff
+_trial_temp
+src/static
+
+# sqlite databases and journals
+*.db
+*.db-journal
+
+# log files
+*.log
+
