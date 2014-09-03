@@ -30,6 +30,12 @@ class ServiceRegistry(object):
         # values is (<class>, <instance>) 
         self.__registry = {}
         
+        # maps names to proxies that refer 
+        # to that name. We keep references to 
+        # (a) reuse proxies and
+        # (b) reset proxies for registry reset (only for testing when using the global registry)
+        self.__serviceProxies = {}
+        
         #
         # 
         self._useWiring = useWiring
@@ -78,7 +84,7 @@ class ServiceRegistry(object):
         
         return className[:1].lower() + className[1:]
     
-    def _getServiceInstance(self, service):
+    def getServiceInstance(self, service):
         if inspect.isclass(service):
             service = self.__makeServiceName(service.__name__)
         else:
@@ -106,7 +112,10 @@ class ServiceRegistry(object):
         else:
             service = self.__makeServiceName(service)
         
-        return serviceproxy.ServiceProxy(service, self)
+        if service not in self.__serviceProxies:
+            self.__serviceProxies[service] = serviceproxy.ServiceProxy(service, self)
+             
+        return self.__serviceProxies[service]
     
     def hasService(self, serviceName):
         """
@@ -114,16 +123,25 @@ class ServiceRegistry(object):
         """
         return serviceName in self.__registry
                
-    def destroy(self):
+    def clean(self):
         """
-        Destroys all services.
+        Destroys all service instances. They stay registered though.
+        All proxies are cleared as well, so they'd have to get a new instance
+        of their service.
         """
         
-        for (_class, instance) in self.__registry.itervalues():
+        for name, values in self.__registry.iteritems():
+            (cls, instance) = values
             if instance and hasattr(instance, u'preDestroy'):
                 instance.preDestroy()
                 
-        self.__registry = {}
+            self.__registry[name] = (cls, None)
+                
+        # remove all instances from the proxies.
+        for proxy in self.__serviceProxies.itervalues():
+            proxy._instance = None
+        
+        
         
     def createWired(self, itemClass, *args, **kwargs):
         """

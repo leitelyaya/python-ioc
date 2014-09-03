@@ -55,15 +55,47 @@ class ServiceRegistryTest(unittest.TestCase):
         mockService = self.serviceRegistry._getServiceProxy(u"mockService")
         self.assertEquals(u"not-wired", mockService._secondService)
         
-    def testDestroy(self):
+    def test_clean(self):
 
         self.serviceRegistry.registerService(MockService)
-        mockService = self.serviceRegistry._getServiceProxy(u"mockService")
+        mockService = self.serviceRegistry.getServiceInstance("mockService")
         
         self.assertFalse(mockService.destroyed)
-        self.serviceRegistry.destroy()
+        self.serviceRegistry.clean()
         self.assertTrue(mockService.destroyed)
-        self.assertFalse(self.serviceRegistry.hasService(u"mockService"))
+        
+        # it still has the service, but there is no instance yet
+        self.assertTrue(self.serviceRegistry.hasService(u"mockService"))
+        
+        # requesting the service a second time will create a new instance
+        mockService2 = self.serviceRegistry.getServiceInstance(u"mockService")
+        self.assertNotEquals(mockService, mockService2)
+        
+    def test_clean_proxybuffer(self):
+        self.serviceRegistry.registerService(MockService)
+        serviceProxy = self.serviceRegistry._getServiceProxy("mockService")
+        realService = self.serviceRegistry.getServiceInstance(u"mockService")
+        self.assertFalse(serviceProxy.destroyed)
+        self.assertFalse(realService.destroyed)
+        
+        self.assertEquals(serviceProxy._instance, realService)
+        
+        self.serviceRegistry.clean()
+        
+        self.assertTrue(serviceProxy._instance is None)
+        self.assertTrue(realService.destroyed)
+
+        
+        # get the service proxy again
+        
+        serviceProxy2 = self.serviceRegistry._getServiceProxy("mockService")
+        realService2 = self.serviceRegistry.getServiceInstance(u"mockService")
+        self.assertFalse(serviceProxy2.destroyed)
+        self.assertFalse(realService2.destroyed)
+        
+        self.assertEquals(serviceProxy, serviceProxy2)
+        self.assertNotEquals(serviceProxy2._instance, realService)
+        self.assertEquals(serviceProxy2._instance, realService2)
         
     def testRegisterServiceInstance(self):
         self.serviceRegistry.registerService(A)
@@ -104,6 +136,9 @@ class ServiceRegistryTest(unittest.TestCase):
         
         
     def testCreateWired(self):
+        """
+        @TODO: what's that test supposed to do?
+        """
         self.serviceRegistry.createWired(MockService)
         self.serviceRegistry.createWired(MockService)
         self.serviceRegistry.createWired(MockService)
@@ -118,7 +153,6 @@ class ServiceRegistryTest(unittest.TestCase):
         self.assertRaises(AssertionError, self.serviceRegistry.registerServiceInstance, new, 'value')
         self.serviceRegistry.registerServiceInstance(new, 'value', overwrite=True)
         self.assertEquals('1', str(self.serviceRegistry._getServiceInstanceForName('value')))
-        
         
 class A(object):
     _b = None

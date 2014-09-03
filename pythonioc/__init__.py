@@ -4,7 +4,7 @@ from serviceregistry import ServiceRegistry
 from pythonioc import serviceproxy
 import inspect
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 #
 # global instance, if the Service-Decorator is used for classes and instances.
@@ -65,5 +65,5 @@ def getService(service):
     """
     Get a service (create or return existing) by class or name using the global service registry.
     """
-    return __getGlobalServiceRegistry()._getServiceInstance(service)
+    return __getGlobalServiceRegistry().getServiceInstance(service)
 

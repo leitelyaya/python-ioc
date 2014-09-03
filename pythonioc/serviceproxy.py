@@ -18,7 +18,7 @@ class ServiceProxy(object):
     
     def __setupInstance(self):
         if not self._instance:
-            self._instance = self._registry._getServiceInstance(self._serviceName)
+            self._instance = self._registry.getServiceInstance(self._serviceName)
             
     def __setattr__(self, name, value):
         if name == u'_instance':
