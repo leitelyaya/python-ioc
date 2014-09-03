@@ -28,3 +28,14 @@ class TestPythonioc(unittest.TestCase):
         
         self.assertEquals(str(now), str(nu.timeInst))
         
+    def test_registerServiceInstanceOverwrite(self):
+        
+        old = 0
+        pythonioc.registerServiceInstance(old, 'value')
+        self.assertEquals('0', str(pythonioc.getService('value')))
+
+        new = 1
+        self.assertRaises(AssertionError, pythonioc.registerServiceInstance, new, 'value')
+        pythonioc.registerServiceInstance(new, 'value', overwrite=True)
+        self.assertEquals('1', str(pythonioc.getService('value')))
+        

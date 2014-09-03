@@ -58,8 +58,8 @@ def Inject(service):
 def registerService(serviceClass, serviceName=None):
     __getGlobalServiceRegistry().registerService(serviceClass, serviceName)
     
-def registerServiceInstance(instance, serviceName=None):
-    __getGlobalServiceRegistry().registerServiceInstance(instance, serviceName)
+def registerServiceInstance(instance, serviceName=None, overwrite=False):
+    __getGlobalServiceRegistry().registerServiceInstance(instance, serviceName, overwrite)
 
 def getService(service):
     """

@@ -108,6 +108,18 @@ class ServiceRegistryTest(unittest.TestCase):
         self.serviceRegistry.createWired(MockService)
         self.serviceRegistry.createWired(MockService)
         
+    def test_registerServiceInstanceOverwrite(self):
+        
+        old = 0
+        self.serviceRegistry.registerServiceInstance(old, 'value')
+        self.assertEquals('0', str(self.serviceRegistry._getServiceInstanceForName('value')))
+
+        new = 1
+        self.assertRaises(AssertionError, self.serviceRegistry.registerServiceInstance, new, 'value')
+        self.serviceRegistry.registerServiceInstance(new, 'value', overwrite=True)
+        self.assertEquals('1', str(self.serviceRegistry._getServiceInstanceForName('value')))
+        
+        
 class A(object):
     _b = None
     

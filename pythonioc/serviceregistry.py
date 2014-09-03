@@ -58,13 +58,13 @@ class ServiceRegistry(object):
         
         self.__registry[serviceName] = (serviceClass, None)
         
-    def registerServiceInstance(self, instance, serviceName=None):
+    def registerServiceInstance(self, instance, serviceName=None, overwrite=False):
         if not serviceName:
             serviceName = self.__makeServiceName(instance.__class__.__name__)
         else:
             serviceName = self.__makeServiceName(serviceName)
             
-        assert serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
+        assert overwrite or serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
         self.__registry[serviceName] = (instance.__class__, instance)
         
         self.injectDependencies(instance)
