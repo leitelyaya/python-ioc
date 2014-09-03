@@ -67,3 +67,5 @@ def getService(service):
     """
     return __getGlobalServiceRegistry().getServiceInstance(service)
 
+def cleanServiceRegistry():
+    __getGlobalServiceRegistry().clean()

@@ -22,21 +22,31 @@ def incrementVersion(what):
         
     newVersion = '%s.%s.%s' % (major, minor, micro)
         
-    if not confirm("Current version is %s. New version would be %s. Ok?" % (pythonioc.__version__, newVersion), default=True):
-        return
     
-    local("sed -i 's/^__version__.*$/__version__ = \"%s\"/g' %s" % (newVersion, 'pythonioc/__init__.py'))
     
-    local('python setup.py sdist')
-    local('twine upload dist/pythonioc-%s.tar.gz' % newVersion)
-    
+    return newVersion
 
 @task
-def release(what='micro'):
+def release(message, what='micro'):
     execute(check)
-    incrementVersion(what)
-
+    newVersion = incrementVersion(what)
+    
+    if confirm("Current version is %s. New version would be %s. Uploading now?" % (pythonioc.__version__, newVersion), default=True):
+        local("sed -i 's/^__version__.*$/__version__ = \"%s\"/g' %s" % (newVersion, 'pythonioc/__init__.py'))
+        
+        local('python setup.py sdist')
+        local('twine upload dist/pythonioc-%s.tar.gz' % newVersion)
+    
+    if confirm('Commit it?', default=True):
+        local('git commit -m "%s" .' % message)
+        local('git tag -a v%s' % newVersion)
+    
 
 @task
 def check():
     local('trial pythonioc')
+    
+@task
+def upgrade():
+    local('sudo pip install pythonioc --upgrade')
+    

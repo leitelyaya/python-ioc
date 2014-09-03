@@ -55,3 +55,10 @@ class TestGlobalServiceRegistry(unittest.TestCase):
         
         self.assertEquals(a, b.a._instance)
         self.assertEquals(b, a.b._instance)
+        
+    def test_cleanServiceRegistry(self):
+        a = pythonioc.getService(CycleA)
+        pythonioc.cleanServiceRegistry()
+        b = pythonioc.getService(CycleA)
+        
+        self.assertNotEquals(a, b)
