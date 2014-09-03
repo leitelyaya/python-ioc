@@ -4,6 +4,8 @@ from serviceregistry import ServiceRegistry
 from pythonioc import serviceproxy
 import inspect
 
+__version__ = "0.2.1"
+
 #
 # global instance, if the Service-Decorator is used for classes and instances.
 #
@@ -20,7 +22,7 @@ def __getGlobalServiceRegistry():
 
 def Service(cls):
     __getGlobalServiceRegistry().registerService(cls)
-    #inspect.
+    # inspect.
     return cls
 
 def Inject(service):

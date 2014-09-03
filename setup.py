@@ -1,4 +1,5 @@
 from distutils.core import setup
+import pythonioc
 setup(name='pythonioc',
       packages=['pythonioc'],
       description='simplistic dependency injection container for python',
@@ -6,5 +7,5 @@ setup(name='pythonioc',
       author_email='frairon@googlemail.com',
       url='https://bitbucket.org/eh14/python-ioc',
       license='LICENSE',
-      version='0.2'
+      version=pythonioc.__version__,
       )
