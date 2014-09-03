@@ -17,11 +17,22 @@ class ServiceRegistry(object):
     __INIT_MEMBERNAME = u'__initialization_done__'
     __INIT_MEMBER_VALUE = 5547534
     
-    def __init__(self):
+    def __init__(self, useWiring=True):
+        """
+        Constructs a new Service Registry
         
+        @param useWiring: if set to False, creating new service instances will not
+                          wire their instance variables using introspection.
+                          This is set to true when the global registry is used and therefore,
+                          all dependencies should be injected using the injection-function.
+        """
         # map names to serviceClasses and instances
         # values is (<class>, <instance>) 
         self.__registry = {}
+        
+        #
+        # 
+        self._useWiring = useWiring
         
         
         # since we use lazy initialization,
@@ -33,8 +44,12 @@ class ServiceRegistry(object):
         self.__dependencyGraph = {} 
         self.__initializationStack = []
                         
-    def registerService(self, serviceClass):
-        serviceName = self.__makeServiceName(serviceClass.__name__)
+    def registerService(self, serviceClass, serviceName=None):
+        if not serviceName:
+            serviceName = self.__makeServiceName(serviceClass.__name__)
+        else:
+            serviceName = self.__makeServiceName(serviceName)
+            
         
         if self._instancesAdded:
             self.log.warn("""registering service %s after an instance has been added. 
@@ -43,8 +58,12 @@ class ServiceRegistry(object):
         
         self.__registry[serviceName] = (serviceClass, None)
         
-    def registerServiceInstance(self, instance):
-        serviceName = self.__makeServiceName(instance.__class__.__name__)
+    def registerServiceInstance(self, instance, serviceName=None):
+        if not serviceName:
+            serviceName = self.__makeServiceName(instance.__class__.__name__)
+        else:
+            serviceName = self.__makeServiceName(serviceName)
+            
         assert serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
         self.__registry[serviceName] = (instance.__class__, instance)
         
@@ -127,16 +146,18 @@ class ServiceRegistry(object):
             u" filter for inspect.getmembers to return only None class variables "
             return obj is None and not inspect.ismethod(obj)
         
-        for (name, _) in inspect.getmembers(service.__class__, memberFilter):
-                        
-            # attributes must start with u'_' but not u'__'
-            if name[0] != u'_' or name.startswith(u'__'):
-                continue
-            
-            # try to find the service with that name.
-            serviceName = name[1:]
-            if serviceName in self.__registry:
-                setattr(service, name, serviceproxy.ServiceProxy(serviceName, self))
+        if self._useWiring:
+            for (name, _) in inspect.getmembers(service.__class__, memberFilter):
+                            
+                # attributes must start with u'_' but not u'__'
+                if name[0] != u'_' or name.startswith(u'__'):
+                    continue
+                
+                # try to find the service with that name.
+                serviceName = name[1:]
+                if serviceName in self.__registry:
+                    setattr(service, name, serviceproxy.ServiceProxy(serviceName, self))
+        
         if runPostInit:
             self._runServicePostInit(self.__makeServiceName(service.__class__.__name__), service)
             
