@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 class ServiceProxy(object):
-    def __init__(self, serviceClass, serviceRegistry):
-        object.__setattr__(self, u'_serviceClass', serviceClass)
+    def __init__(self, serviceName, serviceRegistry):
+        object.__setattr__(self, u'_serviceName', serviceName)
         object.__setattr__(self, u'_registry', serviceRegistry)
         object.__setattr__(self, u'_instance', None)
         object.__setattr__(self, u'_initializationDone', False)
@@ -18,13 +18,12 @@ class ServiceProxy(object):
     
     def __setupInstance(self):
         if not self._instance:
-            self._instance = self._registry.createAndWireInstance(self._serviceClass)
+            self._instance = self._registry._getServiceInstance(self._serviceName)
             
     def __setattr__(self, name, value):
         if name == u'_instance':
             object.__setattr__(self, u'_instance', value)
             return 
         
-        self.__setupInstance()
-        
         setattr(self._instance, name, value)
+

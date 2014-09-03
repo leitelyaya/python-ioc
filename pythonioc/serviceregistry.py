@@ -17,11 +17,12 @@ class ServiceRegistry(object):
     __INIT_MEMBERNAME = u'__initialization_done__'
     __INIT_MEMBER_VALUE = 5547534
     
-    
     def __init__(self):
         
-        # map names to services
+        # map names to serviceClasses and instances
+        # values is (<class>, <instance>) 
         self.__registry = {}
+        
         
         # since we use lazy initialization,
         # we cannot allow to register service classes once an instance
@@ -40,12 +41,12 @@ class ServiceRegistry(object):
                             The instance might miss some dependencies""" % serviceName)
         assert serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
         
-        self.__registry[serviceName] = serviceproxy.ServiceProxy(serviceClass, self)
+        self.__registry[serviceName] = (serviceClass, None)
         
     def registerServiceInstance(self, instance):
         serviceName = self.__makeServiceName(instance.__class__.__name__)
         assert serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
-        self.__registry[serviceName] = instance
+        self.__registry[serviceName] = (instance.__class__, instance)
         
         self.injectDependencies(instance)
 
@@ -57,16 +58,36 @@ class ServiceRegistry(object):
         """
         
         return className[:1].lower() + className[1:]
+    
+    def _getServiceInstance(self, service):
+        if inspect.isclass(service):
+            service = self.__makeServiceName(service.__name__)
+        else:
+            service = self.__makeServiceName(service)
+            
+        return self._getServiceInstanceForName(service)
+    
+    def _getServiceInstanceForName(self, serviceName):
+        if serviceName not in self.__registry:
+            raise Exception('Service %s is not registered. Cannot create instance' % serviceName)
         
-    def getServiceByName(self, serviceName):
+        (cls, instance) = self.__registry[serviceName]
+        if not instance:
+            assert cls
+            self.__registry[serviceName] = (cls, self.createAndWireInstance(cls))
+            
+        return self.__registry[serviceName][1]
+    def _getServiceProxy(self, service):
         """
-        This is only a method for testing. Don't use in production, it's going to 
-        return the ServiceProxy object, not the real service!
+        Returns the service proxy of a service.
+        If a class is given, the name will be extracted.
         """
+        if inspect.isclass(service):
+            service = self.__makeServiceName(service.__name__)
+        else:
+            service = self.__makeServiceName(service)
         
-        assert serviceName in self.__registry, (u"No Service %s registered" % serviceName)
-        
-        return self.__registry[serviceName]
+        return serviceproxy.ServiceProxy(service, self)
     
     def hasService(self, serviceName):
         """
@@ -79,9 +100,9 @@ class ServiceRegistry(object):
         Destroys all services.
         """
         
-        for service in self.__registry.itervalues():
-            if hasattr(service, u'preDestroy'):
-                service.preDestroy()
+        for (_class, instance) in self.__registry.itervalues():
+            if instance and hasattr(instance, u'preDestroy'):
+                instance.preDestroy()
                 
         self.__registry = {}
         
@@ -93,7 +114,7 @@ class ServiceRegistry(object):
         instance = itemClass(*args, **kwargs)
         self.injectDependencies(instance)
         return instance
-            
+        
     def injectDependencies(self, service, runPostInit=True):
         
         if(hasattr(service, self.__INIT_MEMBERNAME) and 
@@ -115,15 +136,15 @@ class ServiceRegistry(object):
             # try to find the service with that name.
             serviceName = name[1:]
             if serviceName in self.__registry:
-                setattr(service, name, self.__registry[serviceName])
+                setattr(service, name, serviceproxy.ServiceProxy(serviceName, self))
         if runPostInit:
             self._runServicePostInit(self.__makeServiceName(service.__class__.__name__), service)
             
     def getDependencyGraph(self):
         return unicode(self.__dependencyGraph)
     
-    def createAndWireInstance(self, serviceClass):
-        instance = serviceClass()
+    def createAndWireInstance(self, cls):
+        instance = cls()
         self.injectDependencies(instance)
         
         return instance

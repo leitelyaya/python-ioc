@@ -10,7 +10,8 @@ class TestServiceProxy(unittest.TestCase):
     
     def testProxy(self):
         reg = serviceregistry.ServiceRegistry()
-        proxy = serviceproxy.ServiceProxy(A, reg)
+        reg.registerService(A)
+        proxy = reg._getServiceProxy('A')
         
         self.assertEquals(42, proxy.someService())
         

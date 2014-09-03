@@ -6,5 +6,5 @@ setup(name='pythonioc',
       author_email='frairon@googlemail.com',
       url='https://bitbucket.org/eh14/python-ioc',
       license='LICENSE',
-      version='0.1'
+      version='0.2'
       )

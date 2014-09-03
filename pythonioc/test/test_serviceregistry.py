@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 import unittest
-from pythonioc import serviceregistry
+import pythonioc
 
 class ServiceRegistryTest(unittest.TestCase):
     
@@ -12,7 +12,7 @@ class ServiceRegistryTest(unittest.TestCase):
     def setUp(self):
         ServiceRegistryTest.mockserviceInitialized = False
         
-        self.serviceRegistry = serviceregistry.ServiceRegistry()
+        self.serviceRegistry = pythonioc.ServiceRegistry()
         
     def tearDown(self):
         self.serviceRegistry = None
@@ -28,8 +28,8 @@ class ServiceRegistryTest(unittest.TestCase):
         self.serviceRegistry.registerService(AnotherService)
         
         # get the proxies
-        mockService = self.serviceRegistry.getServiceByName(u"mockService")
-        anotherService = self.serviceRegistry.getServiceByName(u"anotherService")
+        mockService = self.serviceRegistry._getServiceProxy(u"mockService")
+        anotherService = self.serviceRegistry._getServiceProxy(u"anotherService")
         
         # should not be initailzed yet
         self.assertFalse(ServiceRegistryTest.mockserviceInitialized)
@@ -52,14 +52,15 @@ class ServiceRegistryTest(unittest.TestCase):
         self.serviceRegistry.registerService(MockService)
         self.serviceRegistry.registerService(SecondService)
         
-        mockService = self.serviceRegistry.getServiceByName(u"mockService")
+        mockService = self.serviceRegistry._getServiceProxy(u"mockService")
         self.assertEquals(u"not-wired", mockService._secondService)
         
     def testDestroy(self):
 
         self.serviceRegistry.registerService(MockService)
-        mockService = self.serviceRegistry.getServiceByName(u"mockService")
+        mockService = self.serviceRegistry._getServiceProxy(u"mockService")
         
+        self.assertFalse(mockService.destroyed)
         self.serviceRegistry.destroy()
         self.assertTrue(mockService.destroyed)
         self.assertFalse(self.serviceRegistry.hasService(u"mockService"))
@@ -76,7 +77,7 @@ class ServiceRegistryTest(unittest.TestCase):
         self.serviceRegistry.registerService(B)
         self.serviceRegistry.registerService(A)
         
-        a = self.serviceRegistry.getServiceByName(u"a")
+        a = self.serviceRegistry._getServiceProxy(u"a")
         
         self.assertEquals(u"A", a.getName())
         self.assertEquals(u"B", a.getOtherName())
@@ -85,7 +86,7 @@ class ServiceRegistryTest(unittest.TestCase):
         self.serviceRegistry.registerService(C)
         self.serviceRegistry.registerService(D)
         
-        c = self.serviceRegistry.getServiceByName(u"c")
+        c = self.serviceRegistry._getServiceProxy(u"c")
         
         self.assertRaises(Exception, lambda: c.doSomething())
         
@@ -95,8 +96,8 @@ class ServiceRegistryTest(unittest.TestCase):
         self.serviceRegistry.registerService(MockService)
         self.serviceRegistry.registerService(AnotherService)
         
-        a = self.serviceRegistry.getServiceByName(u"a")
-        mockService = self.serviceRegistry.getServiceByName(u"mockService")
+        a = self.serviceRegistry._getServiceProxy(u"a")
+        mockService = self.serviceRegistry._getServiceProxy(u"mockService")
         
         a.getName()
         mockService.useAnotherService()
