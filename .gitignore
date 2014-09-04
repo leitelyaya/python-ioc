@@ -1,27 +1,16 @@
-*.pyc
-
+# eclipse stuff
 .project
 .pydevproject
 .settings
-*.o
-*.a
+
+# python and hidden
+*.pyc
 *.*~
 
-# videoplatform
-videoplatform/demonstrator
-
-
-# twisted stuff
+# testing folders
 _trial_temp
-src/static
 
-# sqlite databases and journals
-*.db
-*.db-journal
-
-# log files
-*.log
-
-
+# distutils 
 MANIFEST
 dist
+build
