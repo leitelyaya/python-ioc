@@ -65,6 +65,8 @@ class ServiceRegistry(object):
         self.__registry[serviceName] = (serviceClass, None)
         
     def registerServiceInstance(self, instance, serviceName=None, overwrite=False):
+        assert instance is not None, "Cannot register None as instance!"
+        
         if not serviceName:
             serviceName = self.__makeServiceName(instance.__class__.__name__)
         else:
@@ -141,7 +143,9 @@ class ServiceRegistry(object):
         for proxy in self.__serviceProxies.itervalues():
             proxy._instance = None
         
-        
+        self._instancesAdded = False
+        self.__dependencyGraph = {} 
+        self.__initializationStack = []
         
     def createWired(self, itemClass, *args, **kwargs):
         """

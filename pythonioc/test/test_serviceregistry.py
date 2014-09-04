@@ -154,6 +154,10 @@ class ServiceRegistryTest(unittest.TestCase):
         self.serviceRegistry.registerServiceInstance(new, 'value', overwrite=True)
         self.assertEquals('1', str(self.serviceRegistry._getServiceInstanceForName('value')))
         
+    def test_registerServiceInstance_rejectNone(self):
+        self.assertRaises(AssertionError, self.serviceRegistry.registerServiceInstance, None, "somename")
+        
+        
 class A(object):
     _b = None
     

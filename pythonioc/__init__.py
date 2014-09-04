@@ -4,15 +4,12 @@ from serviceregistry import ServiceRegistry
 from pythonioc import serviceproxy
 import inspect
 
-__version__ = "0.2.4"
+__version__ = "0.2.5"
 
 #
 # global instance, if the Service-Decorator is used for classes and instances.
 #
 __globalServiceRegistry = None
-
-def __serviceMetaClass(cls):
-    pass
 
 def __getGlobalServiceRegistry():
     global __globalServiceRegistry
@@ -68,4 +65,7 @@ def getService(service):
     return __getGlobalServiceRegistry().getServiceInstance(service)
 
 def cleanServiceRegistry():
+    """
+    Removes all service instances from the global registry. Mainly for testing to start with a clean registry.
+    """
     __getGlobalServiceRegistry().clean()

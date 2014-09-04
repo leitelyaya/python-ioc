@@ -52,4 +52,5 @@ def upgrade():
     
 @task
 def localInstall():
+    execute(check)
     local('sudo python setup.py install')

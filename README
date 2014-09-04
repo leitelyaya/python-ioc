@@ -1,0 +1,176 @@
+.. role:: bash(code)
+    :language: bash
+
+Simple Inversion-Of-Control-Container for python
+================================================
+
+This package provides a simple inversion-of-control container.
+
+Install with 
+
+.. code:: bash
+
+    pip install pythonioc
+
+Quick Start
+-----------
+
+The main idea is: services are registered to a service-registry and can be injected into users of that service (which can of course be services themselves).
+
+You have two options: 
+
+(A) use a global registry (never create a registry yourself)
+    
+    --> easy to implement, harder to test
+
+(B) use a local registry
+    
+Examples are below, more details will follow.
+
+Global Registry
+^^^^^^^^^^^^^^^
+
+.. code:: python
+
+    import pythonioc
+
+    # register your service    
+    @pythonioc.Service
+    class SomeService(object):
+    
+        # called when the service is auto-instantiated.
+        def postInit(self):
+            pass
+        
+    @pythonioc.NamedService('DifferentNameService')
+    class DifferentService(object):
+        pass        
+        
+    # for classes which we cannot decorate:
+    pythonioc.registerService(ExternalService)
+    
+    # when we don't even have the class (or don't care about lazy-initialization)
+    pythonioc.registerServiceInstance(SomeService())
+    
+    
+    class ServiceUser(object):
+        # inject the dependency by class
+        service = pythonioc.Inject(SomeService)
+        
+        # inject the dependency by name (for cyclic dependencies)
+        service2 = pythonioc.Inject('DifferentNameService')
+       
+      
+     myUser = ServiceUser()
+     
+     myUser.service # --> automatically created and injected service instance.
+     
+     # explicitly get a services
+     pythonioc.getService(SomeService)
+     pythonioc.getService('DifferentNameService')
+
+     
+
+Local Registry
+^^^^^^^^^^^^^^
+
+.. code:: python
+
+
+    class Service(object):
+        
+        # this will make the service registry inject a service named "someOtherService" which 
+        # comes from class SomeOtherService
+        _someOtherService = None
+        
+        def __init__(self):
+            pass
+            
+        # will be called after everything is injected
+        def postInit(self):
+            pass
+            
+        # will be called right before the object is destroyed (the registry's clean
+        # method is called)
+        def preDestroy(self):
+            pass
+            
+            
+
+    class SomeOtherService(object):
+        pass
+        
+    # Use it like
+
+    reg = ServiceRegistry()
+    reg.registerService(Service)
+    reg.registerService(SomeOtherService)
+
+Once the system has all required services registered, a service can be
+injected by doing
+
+.. code:: python
+
+
+    class WiredUser(object):
+
+        _service=None
+        
+        def __init__(self, *args):
+            pass
+            
+    wiredUser = reg.createWired(WiredUser, 'arg1', 'arg2')
+
+Wired objects are not automatically part of the service registry, only
+if added by calling ``reg.registerServiceInstance``. 
+
+Wired objects can inject its own service registry, so they can created wired Objects on the fly:
+
+.. code:: python
+
+
+    class WiredUser(object):
+        _service=None
+        
+
+    class UserCreator(object):
+        _serviceRegistry=None
+        
+        def createUser(self):
+            return self._serviceRegistry.createWired(WiredUser) 
+        
+    userCreator = reg.createWired(UserCreator)
+
+    # create some wired users
+    userA = userCreator.createUser()
+    userB = userCreator.createUser()
+
+
+Features
+--------
+
+-  lazy initialization of services
+-  dependency cycle detection
+
+Notes on Names
+--------------
+
+Services added to the registry need a name. If no name is provided, the class' name (or the instance's class' name) is used. The name's first character is lowered.
+
+Example:
+
+.. code:: python
+
+    import pythonioc
+    
+    class MyService(object):
+        pass
+    
+    pythonioc.registerService(MyService)            # --> name is 'myService'
+    pythonioc.registerServiceInstance(MyService())  # --> name is 'myService'
+    pythonioc.registerService(MyService, serviceName='customName') # --> name is 'customName'
+    pythonioc.registerServiceInstance(MyService(), serviceName='customName2')  # --> name is 'customName2'
+    
+
+Feel free to report any bugs, suggest improvements etc.
+ 
