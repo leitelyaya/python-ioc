@@ -50,3 +50,6 @@ def check():
 def upgrade():
     local('sudo pip install pythonioc --upgrade')
     
+@task
+def localInstall():
+    local('sudo python setup.py install')

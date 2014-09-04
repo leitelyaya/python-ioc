@@ -50,7 +50,7 @@ class ServiceRegistry(object):
         self.__dependencyGraph = {} 
         self.__initializationStack = []
                         
-    def registerService(self, serviceClass, serviceName=None):
+    def registerService(self, serviceClass, serviceName=None, overwrite=False):
         if not serviceName:
             serviceName = self.__makeServiceName(serviceClass.__name__)
         else:
@@ -60,7 +60,7 @@ class ServiceRegistry(object):
         if self._instancesAdded:
             self.log.warn("""registering service %s after an instance has been added. 
                             The instance might miss some dependencies""" % serviceName)
-        assert serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
+        assert overwrite or serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
         
         self.__registry[serviceName] = (serviceClass, None)
         
