@@ -65,7 +65,7 @@ Global Registry
      
      myUser.service # --> automatically created and injected service instance.
      
-     # explicitly get a services
+     # explicitly get a service
      pythonioc.getService(SomeService)
      pythonioc.getService('DifferentNameService')
 
@@ -100,14 +100,12 @@ Local Registry
     class SomeOtherService(object):
         pass
         
-    # Use it like
-
+    # let's register our services
     reg = ServiceRegistry()
     reg.registerService(Service)
     reg.registerService(SomeOtherService)
 
-Once the system has all required services registered, a service can be
-injected by doing
+Once everything is registered, a service can be injected by
 
 .. code:: python
 
