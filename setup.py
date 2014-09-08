@@ -6,6 +6,6 @@ setup(name='pythonioc',
       author='Franz Eichhorn',
       author_email='frairon@googlemail.com',
       url='https://bitbucket.org/eh14/python-ioc',
-      license='LICENSE',
+      license='MIT',
       version=pythonioc.__version__,
       )

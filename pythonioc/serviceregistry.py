@@ -8,6 +8,11 @@ import serviceproxy
 
 class ServiceRegistry(object):
     
+    #
+    # no-instance-set singleton.
+    # We cannot use None because a service's value may be None as well.
+    # A service can also be a constant value... 
+    __NOT_SET = object()
     
     log = logging.getLogger(name=__name__)
 
@@ -62,18 +67,16 @@ class ServiceRegistry(object):
                             The instance might miss some dependencies""" % serviceName)
         assert overwrite or serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
         
-        self.__registry[serviceName] = (serviceClass, None)
+        self.__registry[serviceName] = (serviceClass, self.__NOT_SET)
         
     def registerServiceInstance(self, instance, serviceName=None, overwrite=False):
-        assert instance is not None, "Cannot register None as instance!"
-        
         if not serviceName:
             serviceName = self.__makeServiceName(instance.__class__.__name__)
         else:
             serviceName = self.__makeServiceName(serviceName)
             
         assert overwrite or serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
-        self.__registry[serviceName] = (instance.__class__, instance)
+        self.__registry[serviceName] = (None, instance)
         
         self.injectDependencies(instance)
 
@@ -99,7 +102,7 @@ class ServiceRegistry(object):
             raise Exception('Service %s is not registered. Cannot create instance' % serviceName)
         
         (cls, instance) = self.__registry[serviceName]
-        if not instance:
+        if instance is self.__NOT_SET:
             assert cls
             self.__registry[serviceName] = (cls, self.createAndWireInstance(cls))
             
@@ -132,12 +135,16 @@ class ServiceRegistry(object):
         of their service.
         """
         
-        for name, values in self.__registry.iteritems():
-            (cls, instance) = values
+        for name in list(self.__registry.keys()):
+            (cls, instance) = self.__registry[name]
             if instance and hasattr(instance, u'preDestroy'):
                 instance.preDestroy()
                 
-            self.__registry[name] = (cls, None)
+            if cls:
+                self.__registry[name] = (cls, self.__NOT_SET)
+            else:
+                # remove the entry completely
+                del self.__registry[name]
                 
         # remove all instances from the proxies.
         for proxy in self.__serviceProxies.itervalues():
@@ -168,6 +175,7 @@ class ServiceRegistry(object):
             u" filter for inspect.getmembers to return only None class variables "
             return obj is None and not inspect.ismethod(obj)
         
+        # wire only if wished by the user
         if self._useWiring:
             for (name, _) in inspect.getmembers(service.__class__, memberFilter):
                             
@@ -180,6 +188,7 @@ class ServiceRegistry(object):
                 if serviceName in self.__registry:
                     setattr(service, name, serviceproxy.ServiceProxy(serviceName, self))
         
+        # run the postInit independent of the wiring
         if runPostInit:
             self._runServicePostInit(self.__makeServiceName(service.__class__.__name__), service)
             
