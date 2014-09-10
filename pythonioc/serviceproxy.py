@@ -31,3 +31,15 @@ class ServiceProxy(object):
         self.__setupInstance()
         
         return str(self._instance)
+    
+    def __call__(self, *args, **kwargs):
+        self.__setupInstance()
+        
+        return self._instance(*args, **kwargs)
+    
+    def __repr__(self):
+        self.__setupInstance()
+        
+        return repr(self._instance)
+    
+        
