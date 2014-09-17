@@ -23,7 +23,9 @@ class ServiceProxy(object):
     def __setattr__(self, name, value):
         if name == u'_instance':
             object.__setattr__(self, u'_instance', value)
-            return 
+            return
+        
+        self.__setupInstance()
         
         setattr(self._instance, name, value)
 
