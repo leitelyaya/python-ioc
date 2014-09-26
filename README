@@ -172,3 +172,9 @@ Example:
 
 Feel free to report any bugs, suggest improvements etc.
  
+Notes on Dependency Cycles
+--------------------------
+
+Generally, dependency cycles are resolved by lazily initializing services. Critical cycles can still occur, when two services depend on each other within the `postInit`-methods that is executed after initialization. Those cycles are detected by keeping track of the currently running postInit method.
+
+Keep in mind though, that service creation is NOT thread safe (which is definetely a future task). That means, trying to execute the same service with two threads at the same time, will result in two instances of that service and probably raise a reflexive dependency-cycle-exception like "ClassA requires ClassA".
