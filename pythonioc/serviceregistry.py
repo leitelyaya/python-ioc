@@ -4,6 +4,7 @@
 import logging
 import inspect
 import serviceproxy
+import threading
 
 
 class ServiceRegistry(object):
@@ -40,6 +41,8 @@ class ServiceRegistry(object):
         # (a) reuse proxies and
         # (b) reset proxies for registry reset (only for testing when using the global registry)
         self.__serviceProxies = {}
+        
+        self._serviceCreationLock = threading.RLock()
         
         #
         # 
@@ -101,10 +104,11 @@ class ServiceRegistry(object):
         if serviceName not in self.__registry:
             raise Exception('Service %s is not registered. Cannot create instance' % serviceName)
         
-        (cls, instance) = self.__registry[serviceName]
-        if instance is self.__NOT_SET:
-            assert cls
-            self.__registry[serviceName] = (cls, self.createAndWireInstance(cls))
+        with self._serviceCreationLock:
+            (cls, instance) = self.__registry[serviceName]
+            if instance is self.__NOT_SET:
+                assert cls
+                self.__registry[serviceName] = (cls, self.createAndWireInstance(cls))
             
         return self.__registry[serviceName][1]
     def _getServiceProxy(self, service):

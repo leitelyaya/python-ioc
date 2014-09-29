@@ -39,7 +39,7 @@ def release(message, what='micro'):
     
     if confirm('Commit it?', default=True):
         local('git commit -m "%s" .' % message)
-        local('git tag -a v%s' % newVersion)
+        local('git tag -a v%s -m "%s"' % (newVersion, message))
     
 
 @task

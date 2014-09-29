@@ -3,6 +3,8 @@
 #-------------------------------------------------------------------------------
 import unittest
 import pythonioc
+import time
+import threading
 
 class ServiceRegistryTest(unittest.TestCase):
     
@@ -41,6 +43,29 @@ class ServiceRegistryTest(unittest.TestCase):
         # now use it
         self.assertEquals(u"hello", mockService.useAnotherService())
         self.assertTrue(ServiceRegistryTest.mockserviceInitialized)
+        
+    def test_postInit_concurrentLongrunning(self):
+        self.serviceRegistry.registerService(LongRunningPostInitService)
+        
+        errors = []
+        def getService():
+            try:
+                self.serviceRegistry.getServiceInstance(LongRunningPostInitService)
+            except Exception as e:
+                errors.append(e)
+                 
+        t1 = threading.Thread(target=getService)
+        t2 = threading.Thread(target=getService)
+        
+        t1.start()
+        time.sleep(0.1)
+        t2.start()
+        
+        for t in [t1, t2]:
+            t.join()
+        
+        self.assertEquals(1, LongRunningPostInitService.initialized[0])
+        self.assertEquals(0, len(errors))
 
         
     def testInjectOnlyClassVars(self):
@@ -223,3 +248,11 @@ class AnotherService(object):
 class SecondService(object):
     pass
         
+
+
+class LongRunningPostInitService(object):
+    initialized = [0]
+    
+    def postInit(self):
+        time.sleep(0.4)
+        self.initialized[0] += 1
