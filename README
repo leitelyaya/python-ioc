@@ -21,8 +21,6 @@ You have two options:
 
 (A) use a global registry (never create a registry yourself)
     
-    --> easy to implement, harder to test
-
 (B) use a local registry
     
 Examples are below, more details will follow.
@@ -34,7 +32,7 @@ Global Registry
 
     import pythonioc
 
-    # register your service    
+    # register your service with a default name (here: 'someService', see Notes On Names)
     @pythonioc.Service
     class SomeService(object):
     
@@ -122,7 +120,7 @@ Once everything is registered, a service can be injected by
 Wired objects are not automatically part of the service registry, only
 if added by calling ``reg.registerServiceInstance``. 
 
-Wired objects can inject its own service registry, so they can created wired Objects on the fly:
+Wired objects can inject their own service registry, so they can create wired objects on the fly:
 
 .. code:: python
 
@@ -144,16 +142,10 @@ Wired objects can inject its own service registry, so they can created wired Obj
     userB = userCreator.createUser()
 
 
-Features
---------
-
--  lazy initialization of services
--  dependency cycle detection
-
 Notes on Names
 --------------
 
-Services added to the registry need a name. If no name is provided, the class' name (or the instance's class' name) is used. The name's first character is lowered.
+Services added to the registry need a name. If no name is provided, the class' name (or the instance's class name) is used. The name's first character is lowered by convention.
 
 Example:
 
@@ -173,7 +165,7 @@ Example:
 Notes on Dependency Cycles
 --------------------------
 
-Generally, dependency cycles are resolved by lazily initializing services. Critical cycles can still occur, when two services depend on each other within the `postInit`-methods that is executed after initialization. Those cycles are detected by keeping track of the currently running postInit method.
+Generally, dependency cycles are resolved by lazily initializing services. Critical cycles can still occur, when two services depend on each other within their `postInit`-methods that are executed after initialization. Those cycles are detected by keeping track of the currently running postInit methods and throwing an exception.
 
 The service creation is thread safe, so accessing a non-initialized service with a long-running init or postInit method from two different threads will block one of the threads.
 
