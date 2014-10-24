@@ -48,13 +48,6 @@ class ServiceRegistry(object):
         # 
         self._useWiring = useWiring
         
-        
-        # since we use lazy initialization,
-        # we cannot allow to register service classes once an instance
-        # has been registered. Otherwise we're likely to miss dependencies
-        self._instancesAdded = False
-        
-        
         self.__dependencyGraph = {} 
         self.__initializationStack = []
                         
@@ -65,10 +58,9 @@ class ServiceRegistry(object):
             serviceName = self.__makeServiceName(serviceName)
             
         
-        if self._instancesAdded:
-            self.log.warn("""registering service %s after an instance has been added. 
-                            The instance might miss some dependencies""" % serviceName)
-        assert overwrite or serviceName not in self.__registry, (u"Service named %s already registered" % (serviceName,))
+        assert (overwrite or 
+                serviceName not in self.__registry or 
+                serviceClass == self.__registry[serviceName][0]), (u"Service named %s already registered with different type" % (serviceName,))
         
         self.__registry[serviceName] = (serviceClass, self.__NOT_SET)
         
@@ -83,8 +75,6 @@ class ServiceRegistry(object):
         
         self.injectDependencies(instance)
 
-        self._instancesAdded = True
-        
     def __makeServiceName(self, className):
         """
         Creates name for the service.
@@ -154,7 +144,6 @@ class ServiceRegistry(object):
         for proxy in self.__serviceProxies.itervalues():
             proxy._instance = None
         
-        self._instancesAdded = False
         self.__dependencyGraph = {} 
         self.__initializationStack = []
         
