@@ -4,7 +4,7 @@ from serviceregistry import ServiceRegistry
 from pythonioc import serviceproxy
 import inspect
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 #
 # global instance, if the Service-Decorator is used for classes and instances.
