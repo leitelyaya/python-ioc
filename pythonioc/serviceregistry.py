@@ -187,13 +187,7 @@ class ServiceRegistry(object):
             
     def getDependencyGraph(self):
         return unicode(self.__dependencyGraph)
-    
-    def createAndWireInstance(self, cls):
-        instance = cls()
-        self.injectDependencies(instance)
-        
-        return instance
-            
+      
     def _runServicePostInit(self, serviceName, service):
         if hasattr(service, u'postInit'):
             if hasattr(service, self.__INIT_MEMBERNAME):

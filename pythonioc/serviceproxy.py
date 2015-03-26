@@ -44,4 +44,8 @@ class ServiceProxy(object):
         
         return repr(self._instance)
     
-        
+    @property
+    def instance(self):
+        self.__setupInstance()
+        return self._instance
+
