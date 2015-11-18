@@ -1,15 +1,22 @@
 from fabric.decorators import task
 
-import pythonioc
 from fabric.contrib.console import confirm
 from fabric.operations import local
 from fabric.tasks import execute
+import os
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+about = {}
+# read about values
+with open(os.path.join(here, 'pythonioc', '__about__.py'), 'r') as f:
+    exec(f.read(), about)
 
 def incrementVersion(what):
     if what not in ['major', 'minor', 'micro']:
         raise Exception("Need at least one version number to increment")
 
-    (major, minor, micro) = pythonioc.__version__.split('.')
+    (major, minor, micro) = about['__version__'].split('.')
     if what == 'major':
         major = int(major) + 1
         minor = 0
@@ -31,8 +38,8 @@ def release(message, what='micro'):
     execute(check)
     newVersion = incrementVersion(what)
 
-    if confirm("Current version is %s. New version would be %s. Uploading now?" % (pythonioc.__version__, newVersion), default=True):
-        local("sed -i 's/^__version__.*$/__version__ = \"%s\"/g' %s" % (newVersion, 'pythonioc/__init__.py'))
+    if confirm("Current version is %s. New version would be %s. Uploading now?" % (about['__version__'], newVersion), default=True):
+        local("sed -i 's/^__version__.*$/__version__ = \"%s\"/g' %s" % (newVersion, 'pythonioc/__about__.py'))
 
         local('python setup.py sdist')
         local('twine upload dist/pythonioc-%s.tar.gz' % newVersion)
