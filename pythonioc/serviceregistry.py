@@ -1,11 +1,13 @@
 #-------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
+from future.utils import itervalues
+
 import logging
 import inspect
-import serviceproxy
 import threading
 
+from . import serviceproxy
 
 class ServiceRegistry(object):
 
@@ -141,7 +143,7 @@ class ServiceRegistry(object):
                 del self.__registry[name]
 
         # remove all instances from the proxies.
-        for proxy in self.__serviceProxies.itervalues():
+        for proxy in itervalues(self.__serviceProxies):
             proxy._instance = None
 
         self.__dependencyGraph = {}

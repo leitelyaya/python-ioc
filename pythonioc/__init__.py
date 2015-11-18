@@ -1,10 +1,6 @@
+from . import serviceregistry
 
-
-from serviceregistry import ServiceRegistry
-from pythonioc import serviceproxy
 import inspect
-
-__version__ = "0.3.1"
 
 #
 # global instance, if the Service-Decorator is used for classes and instances.
@@ -14,7 +10,7 @@ __globalServiceRegistry = None
 def __getGlobalServiceRegistry():
     global __globalServiceRegistry
     if not __globalServiceRegistry:
-        __globalServiceRegistry = ServiceRegistry(useWiring=False)
+        __globalServiceRegistry = serviceregistry.ServiceRegistry(useWiring=False)
     return __globalServiceRegistry
 
 
@@ -24,9 +20,9 @@ def NamedService(name):
     """
     def Service(cls):
         __getGlobalServiceRegistry().registerService(cls, serviceName=name)
-        
-        return cls 
-    
+
+        return cls
+
     return Service
 def Service(cls):
     """
@@ -39,22 +35,22 @@ def Service(cls):
 def Inject(service):
     """
     Use this function to create auto-injecting instance properties.
-    
+
     Class MyClass(object):
         # inject by name
         service = pythonioc.Inject('SomeService')
-        
+
         # inject by class
         service2 = pythonioc.Inject(SomeServiceClass)
-        
-    An instance of "SomeService" will be injected (and created) when used. 
+
+    An instance of "SomeService" will be injected (and created) when used.
     """
     return __getGlobalServiceRegistry()._getServiceProxy(service)
 
 
 def registerService(serviceClass, serviceName=None, overwrite=False):
     __getGlobalServiceRegistry().registerService(serviceClass, serviceName, overwrite)
-    
+
 def registerServiceInstance(instance, serviceName=None, overwrite=False):
     __getGlobalServiceRegistry().registerServiceInstance(instance, serviceName, overwrite)
 
