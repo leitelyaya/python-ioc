@@ -99,7 +99,8 @@ Local Registry
         pass
         
     # let's register our services
-    reg = ServiceRegistry()
+    from pythonioc import serviceregistry
+    reg = serviceregistry.ServiceRegistry()
     reg.registerService(Service)
     reg.registerService(SomeOtherService)
 
