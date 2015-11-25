@@ -35,6 +35,9 @@ def incrementVersion(what):
 
 @task
 def release(message, what='micro'):
+    """
+    Release (and commit) the current state. Arguments <message>, [<what> (micro|minor|major)].
+    """
     execute(check)
     newVersion = incrementVersion(what)
 
@@ -51,13 +54,22 @@ def release(message, what='micro'):
 
 @task
 def check():
+    """
+    Run unit tests.
+    """
     local('trial pythonioc')
 
 @task
 def upgrade():
+    """
+    Upgrade local pythonioc installation.
+    """
     local('sudo pip install pythonioc --upgrade')
 
 @task
 def localInstall():
+    """
+    Install locally using setup.py.
+    """
     execute(check)
     local('sudo python setup.py install')

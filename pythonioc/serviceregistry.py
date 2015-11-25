@@ -218,9 +218,10 @@ class ServiceRegistry(object):
 
                 self.__initializationStack.append(serviceName)
 
-            service.postInit()
-            setattr(service, self.__INIT_MEMBERNAME, self.__INIT_MEMBER_VALUE)
+            try:
+                service.postInit()
 
-            assert len(self.__initializationStack) > 0
-            del self.__initializationStack[-1:]
-
+                setattr(service, self.__INIT_MEMBERNAME, self.__INIT_MEMBER_VALUE)
+            finally:
+                assert len(self.__initializationStack) > 0
+                del self.__initializationStack[-1:]

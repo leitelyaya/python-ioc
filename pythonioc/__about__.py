@@ -11,7 +11,7 @@ __all__ = [
 
 __title__ = "pythonioc"
 __summary__ = "Simplistic dependency injection container for python"
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __author__ = "Franz Eichhorn"
 __email__ = "frairon@googlemail.com"
