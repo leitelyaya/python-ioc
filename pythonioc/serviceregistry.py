@@ -67,8 +67,7 @@ class ServiceRegistry(object):
         self.__registry[serviceName] = (serviceClass, self.__NOT_SET)
 
         if overwrite and serviceName in self.__serviceProxies:
-            # remove it.
-            del self.__serviceProxies[serviceName]
+            setattr(self.__serviceProxies[serviceName], u"_instance", None)
 
     def registerServiceInstance(self, instance, serviceName=None, overwrite=False):
         if not serviceName:
@@ -82,8 +81,7 @@ class ServiceRegistry(object):
         self.injectDependencies(instance)
 
         if overwrite and serviceName in self.__serviceProxies:
-            # remove it.
-            del self.__serviceProxies[serviceName]
+            setattr(self.__serviceProxies[serviceName], u"_instance", None)
 
     def __makeServiceName(self, className):
         """
